@@ -15,10 +15,12 @@ motor leftMotorBack = motor(PORT10, ratio18_1, false);
 motor rightMotorFront = motor(PORT11, ratio18_1, true); 
 motor rightMotorBack = motor(PORT20, ratio18_1, true); 
 
-motor clawMotor = motor(PORT12, ratio18_1, false);
+motor clawMotor = motor(PORT12, ratio36_1, false);
 
 motor_group LeftDrive = motor_group(leftMotorFront, leftMotorBack);
 motor_group RightDrive = motor_group(rightMotorFront, rightMotorBack);
+
+drivetrain DriveTrain = drivetrain(LeftDrive, RightDrive);
 
 
 controller user_input = controller(primary);
