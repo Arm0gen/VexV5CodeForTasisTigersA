@@ -11,6 +11,8 @@ extern motor clawMotor;
 
 extern motor_group RightDrive;
 extern motor_group LeftDrive;
+extern drivetrain DriveTrain;
+
 extern controller user_input;
 
 

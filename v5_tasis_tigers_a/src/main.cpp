@@ -25,7 +25,13 @@ competition Competition;
 
 
 int angle = 400;
-int current_angle = 0;
+int direction_horizontal = 0, direction_vertical = 0;
+turnType turn;
+//Measure the chasi length and width before running the code!!!!!!!
+double chasi_width, chasi_length; // in MILIMETERS
+double wheel_radius; // in MILIMETERS
+double distance_wheel_to_center;
+
 
 // define your global instances of motors and other devices here
 
@@ -38,6 +44,25 @@ int current_angle = 0;
 /*  function is only called once after the V5 has been powered on and        */
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
+
+//Converting functions
+void convert(double& distance, vex::distanceUnits distance_units){
+   switch(distance_units){
+    case vex::distanceUnits::cm: distance*=10; break; // transforming cm to mm
+    case vex::distanceUnits::in: distance*=0.03937; break; // transfoming in to mm
+    case vex::distanceUnits::mm: break; // mm are used as default units of measure, so no change needed
+    default: break; // mm are default units of measure
+  }
+}
+
+void convert(double& time, vex::timeUnits time_units){
+  switch(time_units){
+      case vex::timeUnits::msec: time/=1000; break; // transformin to sec
+      case vex::timeUnits::sec: break; // default units of measure
+  }
+}
+//Converting functions
+
 
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
@@ -57,10 +82,41 @@ void pre_auton(void) {
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-void autonomous(void) {
-  // ..........................................................................
-  // Insert autonomous user code here.
-  // ..........................................................................
+void moveBot(double distance, double time = 100, vex::directionType direction =vex::directionType::fwd , vex::distanceUnits distance_units = vex::distanceUnits::mm, vex::timeUnits time_units = vex::timeUnits::msec){
+  convert(distance, distance_units);// see convertation functions, changes tp 
+  convert(time, time_units); // see convertation functions
+ 
+
+  double degrees = 360 * distance / (2 * M_PI * wheel_radius);
+
+  LeftDrive.spinFor(direction, time, vex::timeUnits::sec, degrees/time, vex::velocityUnits::dps);
+  RightDrive.spinFor(direction, time, vex::timeUnits::sec, degrees/time, vex::velocityUnits::dps);
+}
+
+void rotate(double degrees, double time = 100, vex::timeUnits time_units = vex::timeUnits::msec){
+  convert(time, time_units);
+
+  bool is_clockwise = true;
+
+  switch((int)degrees){
+    case 180 ... 360: is_clockwise = false; break;
+    default: break;
+  }
+
+  double velocity = distance_wheel_to_center * degrees / (wheel_radius * time); // refer to the engineering notebook/photo in the chat to see as to why this formula
+
+  if(is_clockwise){ // spining clockwise 
+    LeftDrive.spinFor(vex::directionType::rev, time, vex::timeUnits::sec, velocity, vex::velocityUnits::dps);
+    RightDrive.spinFor(vex::directionType::fwd, time, vex::timeUnits::sec, velocity, vex::velocityUnits::dps);
+  }else{ // spining counter clockwise
+    LeftDrive.spinFor(vex::directionType::fwd, time, vex::timeUnits::sec, velocity, vex::velocityUnits::dps);
+    RightDrive.spinFor(vex::directionType::rev, time, vex::timeUnits::sec, velocity, vex::velocityUnits::dps);
+  }
+}
+
+void autonomous(void){
+    distance_wheel_to_center = sqrt(pow(chasi_width, 2)+pow(chasi_length, 2));
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -76,25 +132,63 @@ void autonomous(void) {
 void usercontrol(void) {
    // User control code here, inside the loop
   while (1) {
-    double y, x;
+    double y, x, speed;
   
 
     y = user_input.Axis2.position();
     x = user_input.Axis1.position();
 
-    RightDrive.spin(fwd, y-x, pct);
-    LeftDrive.spin(fwd, y+x, pct);
+    speed = user_input.Axis3.position();
+
+    switch((int)x){
+      case -100 ... -25:
+        direction_horizontal = -100;
+        break;
+      case 25 ... 100:
+        direction_horizontal = 100;
+        break;
+      default:
+        direction_horizontal = 0;
+        break;
+    }
+
+    switch((int)y){
+      case -100 ... -25:
+        direction_vertical = -100;
+        break;
+      case 25 ... 100:
+        direction_vertical = 100;
+        break;
+      default:
+        direction_vertical = 0;
+        break;
+    }
+    
+
+    RightDrive.spin(fwd, (direction_vertical-direction_horizontal)*speed, pct);
+    LeftDrive.spin(fwd, (direction_vertical+direction_horizontal)*speed, pct);
+
+   /* switch((int)x){
+      case -100 ... -25:
+        DriveTrain.turn(turnType::left,  speed/2, velocityUnits::pct);
+        break;
+      case 25 ... 100:
+        DriveTrain.turn(turnType::right, speed/2, velocityUnits::pct);
+        break;
+      default:
+        break;
+    }
+
+    DriveTrain.drive(fwd, speed, velocityUnits::pct);*/
     
     if(user_input.ButtonA.pressing()){
-      clawMotor.spinFor(directionType::fwd, 0.1, sec, 600, dps);
-      current_angle += angle;
+      clawMotor.spinFor(directionType::fwd, 0.1, sec, 900, dps);
     }else if(user_input.ButtonB.pressing()){
-      clawMotor.spinFor(directionType::rev, 0.1, sec, 600, dps);
-      current_angle = 0;
+      clawMotor.spinFor(directionType::rev, 0.1, sec, 900, dps);
     }
 
     wait(20, msec); // Sleep the task for a short amount of time to
-    }                  
+    } 
 }
 
 //
