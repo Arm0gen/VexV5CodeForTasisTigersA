@@ -17,6 +17,7 @@
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
+#include <cstdlib>
 
 using namespace vex;
 
@@ -31,7 +32,8 @@ turnType turn;
 double chasi_width, chasi_length; // in MILIMETERS
 double wheel_radius; // in MILIMETERS
 double distance_wheel_to_center;
-
+double claw_motor_speed = 1800;
+double sensitivity_part = 8;
 
 // define your global instances of motors and other devices here
 
@@ -63,6 +65,22 @@ void convert(double& time, vex::timeUnits time_units){
 }
 //Converting functions
 
+//Creating functions deadlocking several values of joystick inputs
+
+double deadlock(double range, double& value, int partitions = sensitivity_part){
+	double increment = range/partitions;
+
+	for(int i = 0; i < range; i += increment){
+		if(abs(i-value)<=increment/2)
+			value = i;
+			return i;
+	}
+	
+	value = 0;
+	return 0;
+}
+
+//Finished creating deadlocking functions
 
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
@@ -140,6 +158,7 @@ void usercontrol(void) {
 
     speed = user_input.Axis3.position();
 
+    /*
     switch((int)x){
       case -100 ... -25:
         direction_horizontal = -100;
@@ -162,8 +181,12 @@ void usercontrol(void) {
       default:
         direction_vertical = 0;
         break;
-    }
-    
+    }*/
+    direction_horizontal = deadlock(200, x);
+    direction_vertical =  deadlock(200, y);
+
+    direction_horizontal -=100;
+    direction_vertical -=100;
 
     RightDrive.spin(fwd, (direction_vertical-direction_horizontal)*speed, pct);
     LeftDrive.spin(fwd, (direction_vertical+direction_horizontal)*speed, pct);
@@ -182,9 +205,9 @@ void usercontrol(void) {
     DriveTrain.drive(fwd, speed, velocityUnits::pct);*/
     
     if(user_input.ButtonA.pressing()){
-      clawMotor.spinFor(directionType::fwd, 0.1, sec, 900, dps);
+      clawMotor.spinFor(directionType::fwd, 0.1, sec, claw_motor_speed, dps);
     }else if(user_input.ButtonB.pressing()){
-      clawMotor.spinFor(directionType::rev, 0.1, sec, 900, dps);
+      clawMotor.spinFor(directionType::rev, 0.1, sec, claw_motor_speed, dps);
     }
 
     wait(20, msec); // Sleep the task for a short amount of time to
