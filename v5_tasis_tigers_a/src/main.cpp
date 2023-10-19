@@ -131,19 +131,20 @@ void rotate(double degrees, double time = 100, vex::timeUnits time_units = vex::
 }
 
 void autonomous(void){
-  /*
+  
   DriveTrain.turnFor(55, vex::rotationUnits::deg);
   DriveTrain.driveFor(vex::directionType::rev, 300, vex::distanceUnits::mm, true);
   clawMotor.spinFor(directionType::fwd, 1, sec, claw_motor_speed, dps);
   DriveTrain.driveFor(fwd, 500, vex::distanceUnits::mm, true);
   DriveTrain.turnFor(vex::turnType::right, 10, vex::rotationUnits::deg);
   DriveTrain.driveFor(fwd, 700, vex::distanceUnits::mm, true);
-  clawMotor.spinFor(vex::directionType::rev, 0.6, sec, claw_motor_speed/4, dps);*/
-
+  clawMotor.spinFor(vex::directionType::rev, 0.6, sec, claw_motor_speed/4, dps);
+  
+  /*
   DriveTrain.driveFor(fwd, 1200, mm);
   DriveTrain.turnFor(vex::turnType::left, 65, vex::rotationUnits::deg);
   clawMotor.spinFor(directionType::fwd, 0.5, sec, claw_motor_speed/2, dps);
-  DriveTrain.driveFor(vex::directionType::rev, 250, mm);
+  DriveTrain.driveFor(vex::directionType::rev, 250, mm);*/
 
 }
 
